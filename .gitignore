@@ -1,0 +1,46 @@
+# --- OS / editor ---
+.DS_Store
+Thumbs.db
+*~
+.vscode/
+
+# --- Claude Code (local only) ---
+CLAUDE.md
+.claude/
+
+# --- LaTeX sources kept locally, not published (only the compiled PDFs are tracked) ---
+writing/*.tex
+
+# --- LaTeX build artifacts ---
+*.aux
+*.log
+*.out
+*.toc
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+
+# --- R / Python scratch ---
+.Rhistory
+.RData
+.Rproj.user/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# --- Presentations ---
+*.pptx
+
+# --- Reference papers kept locally, not published (copyright) ---
+literature/
+
+# --- Heavy raw data (kept locally, not published) ---
+# Only small derived climate CSVs and the GADM shapefiles are versioned.
+data/external/climate/*.nc
+data/external/climate/spei*.csv
+data/external/climate/iraq_water_stress_final.csv
+data/external/climate/iraq_ET_2006_2025.csv
+data/external/conflict/
+data/external/survey_data/
