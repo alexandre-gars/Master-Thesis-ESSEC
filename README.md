@@ -1,4 +1,4 @@
-# Compound Drought–Conflict Shocks and Iraqi Household Welfare (2007–2017)
+# Compound Drought–Conflict Shocks and Iraqi Household : Consumption, Poverty and Land Productivity (2007–2017)
 
 **Author:** Alexandre Gars (ESSEC Business School)
 
