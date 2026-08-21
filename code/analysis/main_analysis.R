@@ -111,7 +111,7 @@ tidy_fe <- function(fit, label, outcome) {
 }
 
 # -----------------------------------------------------------------------------
-# run_pair(): estimate the SAME right-hand side for BOTH outcomes (expenditure
+# run_pair(): estimate the same right-hand side for both outcomes (expenditure
 # and poverty). "rhs" is the string of variables of interest, ctrl_str adds the
 # controls, and "| fe_var + year" tells fixest to absorb those fixed effects.
 # cluster=... makes the standard errors robust to correlation within fe_var.
