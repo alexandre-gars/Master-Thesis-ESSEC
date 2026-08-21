@@ -1,30 +1,41 @@
-## 27_conflict_pc.R  (REVISED 2026-06-09)
-## Build the conflict-intensity measure used in final.tex and report the
-## fatalities distribution + the household-sample descriptive statistics.
-##
-## NEW measure (user request 2026-06-11):
-##   conflict_int = 1e5 * fatalities_gt / pop_gt       (deaths per 100,000 inhab.)
-##   entered LINEARLY (no log). Fatalities are UCDP GED governorate-year counts,
-##   normalised by official COSIT governorate population, so the rate is constant
-##   within a governorate-year. Rescaled from deaths/1,000 to deaths/100,000 so the
-##   intensity values read as whole numbers rather than small decimals.
-##
-## Binary high-conflict indicator (for the S4 interaction "binary" case):
-##   high_conf = 1(conflict_int >= p75 of survey gov-years)  -- top quartile.
-##   p75 keeps enough treated cells for the interaction to be estimable in every
-##   subsample (KRG, non-ISIS), unlike the stricter p90, while still flagging
-##   genuinely elevated violence (the UCDP minor-armed-conflict floor of 25
-##   battle deaths per year sits well below this cut).
-##
-## Output: data/processed/conflict_gov_year_pc.csv
-## Author: A. Gars
+# =============================================================================
+# conflict_measure.R
+# -----------------------------------------------------------------------------
+# Goal of this script: turn raw conflict death counts into the conflict measure
+# the paper actually uses, and print some descriptive numbers about it.
+#
+# The measure (decided 2026-06-11):
+#   conflict_int = 100000 * fatalities / population   (deaths per 100,000 people)
+# It is entered "linearly" in the regressions, meaning we use the number itself,
+# not its logarithm. Fatalities come from UCDP GED (a conflict-events database),
+# counted per governorate per year, and we divide by the official population from
+# population.R so that big governorates are not automatically counted as more
+# violent. We multiply by 100,000 instead of 1,000 just so the numbers read as
+# whole figures rather than tiny decimals.
+#
+# We also build a simple yes/no "high conflict" flag:
+#   high_conf = 1 if conflict_int is in the top 25% (p75) of the survey years.
+# The top quartile is used (rather than the stricter top 10%) so that even small
+# subsamples like Kurdistan still contain some "high conflict" observations,
+# which is needed for the interaction terms in the regressions to be estimable.
+#
+# Inputs:
+#   data/processed/conflict_gov_year.csv     (raw fatalities per governorate-year)
+#   data/processed/population_gov_year.csv   (population, from population.R)
+#   data/final/panel_household_gov.csv       (households, for descriptive stats)
+# Output:
+#   data/processed/conflict_gov_year_pc.csv  (conflict_int, its lags, high_conf)
+# =============================================================================
 
+# dplyr = data manipulation, readr = read/write csv, tidyr = reshaping helpers
 suppressPackageStartupMessages({
   library(dplyr); library(readr); library(tidyr)
 })
 
+# folder where the output is written
 out_dir <- "data/processed"
 
+# read the raw fatalities (keep only the columns we need) and the population
 conf <- read_csv("data/processed/conflict_gov_year.csv",
                  show_col_types = FALSE, progress = FALSE) %>%
   select(governorate, year, conflict_fatalities)
@@ -32,6 +43,9 @@ pop  <- read_csv("data/processed/population_gov_year.csv",
                  show_col_types = FALSE, progress = FALSE) %>%
   select(governorate, year, pop)
 
+# join population onto fatalities (matching governorate and year), then compute
+# deaths per 100,000 inhabitants. conflict_int is just a copy of that number, and
+# it is the variable used everywhere else in the project.
 cpc <- conf %>%
   left_join(pop, by = c("governorate", "year")) %>%
   mutate(
@@ -39,7 +53,13 @@ cpc <- conf %>%
     conflict_int    = deaths_per_100k                     # linear intensity (no log)
   )
 
-## ---- lags of the new measure (year shift within governorate) -------------
+# -----------------------------------------------------------------------------
+# lagged versions of the measure (conflict one, two and three years earlier).
+# mk_lag() takes the conflict table, adds k to the year, and renames the column
+# to conflict_int_lag{k}. When we later join it back on (governorate, year), a
+# row in year t receives the conflict value from year t-k. These lags let the
+# regressions test whether past conflict, not just current conflict, matters.
+# -----------------------------------------------------------------------------
 mk_lag <- function(df, k) {
   df %>% select(governorate, year, conflict_int) %>%
     mutate(year = year + k) %>%
@@ -50,10 +70,13 @@ cpc <- cpc %>%
   left_join(mk_lag(cpc, 2), by = c("governorate", "year")) %>%
   left_join(mk_lag(cpc, 3), by = c("governorate", "year"))
 
-## ============================================================
-## Fatalities / intensity distribution
-## ============================================================
-cat("================ DISTRIBUTION (all gov-years 2004-2017) ================\n")
+# -----------------------------------------------------------------------------
+# describe the fatalities and the intensity measure.
+# summary() prints min/quartiles/mean/max; quantile() prints chosen percentiles.
+# We do this for all governorate-years and again just for the survey years,
+# because the regressions only ever use the survey years (2007, 2012, 2017).
+# -----------------------------------------------------------------------------
+cat("distribution (all gov-years 2004-2017)\n")
 cat("N gov-years:", nrow(cpc), "\n")
 cat("\n-- raw fatality counts --\n"); print(summary(cpc$conflict_fatalities))
 cat("share == 0 :", round(mean(cpc$conflict_fatalities == 0, na.rm = TRUE), 3), "\n")
@@ -62,6 +85,7 @@ print(summary(cpc$conflict_int))
 cat("quantiles:\n")
 print(round(quantile(cpc$conflict_int, c(0,.25,.5,.75,.9,.95,.99,1), na.rm = TRUE), 4))
 
+# keep only the three survey years and describe conflict within them
 surv <- cpc %>% filter(year %in% c(2007, 2012, 2017))
 cat("\n-- survey years (2007/2012/2017): conflict_int --\n")
 print(summary(surv$conflict_int))
@@ -71,33 +95,41 @@ cat("share survey gov-years with 0 fatalities:",
     round(mean(surv$conflict_fatalities == 0), 3), "\n")
 cat("mean conflict_int (survey gov-years):", round(mean(surv$conflict_int), 4), "\n")
 
-## ============================================================
-## Binary high-conflict indicator: top quartile (p75)
-## ============================================================
-thr_all  <- quantile(cpc$conflict_int,  0.75, na.rm = TRUE)   # all gov-years
-thr_surv <- quantile(surv$conflict_int, 0.75, na.rm = TRUE)   # survey gov-years
+# -----------------------------------------------------------------------------
+# build the binary high-conflict flag.
+# quantile(..., 0.75) is the value below which 75% of observations fall (the top
+# quartile cut-off). We compute it two ways but use the survey-years cut-off as
+# the threshold, then flag every governorate-year at or above it as high_conf=1.
+# -----------------------------------------------------------------------------
+thr_all  <- quantile(cpc$conflict_int,  0.75, na.rm = TRUE)   # cut-off over all gov-years
+thr_surv <- quantile(surv$conflict_int, 0.75, na.rm = TRUE)   # cut-off over survey gov-years
 THR <- thr_surv   # threshold used in the regressions (top quartile of survey gov-years)
 cpc <- cpc %>% mutate(high_conf = as.integer(conflict_int >= THR))
-cat("\n================ BINARY HIGH-CONFLICT INDICATOR (p75) ================\n")
+cat("\nbinary high-conflict indicator (p75)\n")
 cat("p75 conflict_int (all gov-years) :", round(thr_all, 4), "deaths/100k\n")
-cat("p75 conflict_int (survey gov-yrs):", round(thr_surv, 4), "deaths/100k  <-- THRESHOLD\n")
+cat("p75 conflict_int (survey gov-yrs):", round(thr_surv, 4), "deaths/100k  <-- threshold\n")
 cat("share high_conf==1 (all gov-years)   :", round(mean(cpc$high_conf, na.rm=TRUE), 3), "\n")
 cat("share high_conf==1 (survey gov-years):",
     round(mean(cpc$high_conf[cpc$year %in% c(2007,2012,2017)], na.rm=TRUE), 3), "\n")
 
+# save the finished conflict table (intensity, its three lags, and the flag)
 write_csv(cpc, file.path(out_dir, "conflict_gov_year_pc.csv"))
 cat("\nWrote conflict_gov_year_pc.csv (", nrow(cpc), "rows )\n")
 
-## ============================================================
-## HOUSEHOLD-SAMPLE DESCRIPTIVE STATISTICS (for desc tables in the paper)
-## ============================================================
-panel <- read_csv("data/final/panel.csv", show_col_types = FALSE, progress = FALSE) %>%
+# -----------------------------------------------------------------------------
+# household-level descriptive statistics for the paper's descriptive tables.
+# We read the household panel and attach each household's conflict_int/high_conf
+# by matching its governorate and year.
+# -----------------------------------------------------------------------------
+panel <- read_csv("data/final/panel_household_gov.csv", show_col_types = FALSE, progress = FALSE) %>%
   left_join(cpc %>% select(governorate, year, conflict_int, high_conf),
             by = c("governorate", "year"))
 
-## agricultural / rural household sample used in the descriptive tables
+# the paper's descriptive tables use the agricultural / rural household sample:
+# any household that either works in agriculture (occ_agri==1) or lives in a
+# rural area (rural==1).
 agri <- panel %>% filter(occ_agri == 1 | rural == 1)
-cat("\n================ DESC: agri/rural household sample ================\n")
+cat("\ndesc: agri/rural household sample\n")
 cat("N agri/rural rows:", nrow(agri), "\n")
 ci <- agri$conflict_int
 cat(sprintf("conflict_int (deaths/100k): mean=%.4f sd=%.4f median=%.4f min=%.4f max=%.4f\n",
@@ -105,6 +137,8 @@ cat(sprintf("conflict_int (deaths/100k): mean=%.4f sd=%.4f median=%.4f min=%.4f 
             min(ci,na.rm=TRUE), max(ci,na.rm=TRUE)))
 cat("share high_conf==1 (agri sample):", round(mean(agri$high_conf, na.rm=TRUE),3), "\n")
 
+# average conflict exposure by occupational-composition group (stay farmer /
+# urban migration / rural non-agri), to see who lives with more violence
 cat("\n-- conflict_int by occupational composition (strategic_choice_label) --\n")
 comp <- panel %>% filter(!is.na(strategic_choice_label)) %>%
   group_by(strategic_choice_label) %>%
