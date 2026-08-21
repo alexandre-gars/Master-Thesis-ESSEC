@@ -1,7 +1,7 @@
 # =============================================================================
 # maps.R
 # -----------------------------------------------------------------------------
-# Draws map (choropleth) figures of Iraq using real geographic boundaries:
+# Draws map figures of Iraq using real geographic boundaries:
 #   fig13 governorate map of SPEI (drought) by survey year
 #   fig14 governorate map of conflict (deaths per 100,000) by survey year
 #   fig15 governorate map of welfare (mean log per-capita expenditure) by year
@@ -10,10 +10,6 @@
 #   fig18 national NDVI/EVI vs SPEI time series and scatter
 # Note: of these, only fig15 is currently included in the paper; the others are
 # kept as extra diagnostics.
-#
-# A choropleth colours each area (governorate or district) by the value of some
-# variable. We read the boundary polygons from shapefiles and join our data onto
-# them by governorate.
 #
 # Inputs:
 #   data/external/shapefile/gadm41_IRQ_1.shp     governorate polygons
@@ -123,7 +119,7 @@ common_theme <- theme_minimal(base_size = 10) +
     strip.text       = element_text(size = 10, face = "bold")
   )
 
-# plain-English axis labels for the maps (longitude/latitude)
+
 LON_LAB <- "Longitude (degrees east)"
 LAT_LAB <- "Latitude (degrees north)"
 

@@ -1,10 +1,7 @@
 # =============================================================================
 # descriptive_figures.R
 # -----------------------------------------------------------------------------
-# Rebuilds the descriptive (non-map) figures used in final.tex. The plots carry
-# no title inside the image on purpose: the title is the LaTeX caption, so an
-# embedded "Figure N: ..." would clash with the caption numbering. Everything is
-# recomputed from the underlying data so the plots stay faithful to it.
+# Rebuilds the descriptive (non-map) figures used in final.pdf. 
 #
 # Figures produced (both pdf and png in outputs/figures/):
 #   fig1_spei_trend          drought (SPEI) over time by region group
@@ -23,13 +20,12 @@ suppressPackageStartupMessages({
 })
 
 figdir <- "outputs/figures"
-# a shared clean theme, with a bold centred title (used by the multi-panel figs)
+# a shared clean theme
 th <- theme_minimal(base_size = 13) +
   theme(panel.grid.minor = element_blank(),
         plot.title = element_text(face = "bold", hjust = 0.5, size = 12))
 
-# save_fig(): save one plot as both pdf and png with the given width/height, and
-# print a short confirmation. Used for every figure below.
+# save_fig(): save one plot as both pdf and png with the given width/height
 save_fig <- function(p, name, w, h) {
   ggsave(file.path(figdir, paste0(name, ".pdf")), p, width = w, height = h)
   ggsave(file.path(figdir, paste0(name, ".png")), p, width = w, height = h, dpi = 150)
@@ -171,7 +167,7 @@ save_fig(fig3, "fig3_spectral_indices", 10, 7)
 # Composition sample: agricultural/rural households (occ_agri==1 or rural==1)
 # that have a non-missing composition label. This matches the "non-missing
 # composition" sample in the paper's descriptive table. Numbers are computed from
-# the panel here, not hard-coded, so they stay in sync with the data.
+# the panel here.
 # -----------------------------------------------------------------------------
 # map the raw label to a short two-line label used on the plot
 comp_lab <- c("Stay farmer" = "Stay\nFarmer",
@@ -291,7 +287,7 @@ gov_names <- c("1"="Sulaymaniyah","2"="Kirkuk","3"="Nineveh","4"="Duhok","5"="Er
                "16"="Qadisiyyah","17"="Najaf","18"="Basra")
 
 # conflict is the population-normalised measure (deaths per 100,000), joined from
-# the per-capita conflict file so this figure uses the SAME conflict variable as
+# the per-capita conflict file so this figure uses the same conflict variable as
 # the rest of the paper, not the old log-fatalities column stored in the panel.
 conf_pc <- read_csv("data/processed/conflict_gov_year_pc.csv",
                     show_col_types = FALSE, progress = FALSE) %>%
