@@ -1,6 +1,9 @@
 # =============================================================================
-# This is the main regression script of the paper. It estimates how drought
-# (dryness) and armed conflict, together, affect household welfare.
+# This is the main regression script of the paper "Compound Drought–Conflict Shocks and Iraqi
+# Household : Consumption, Poverty and Land Productivity (2007–2017)". 
+# The full code is available at https://github.com/alexandre-gars/Master-Thesis-ESSEC/tree/main/code.
+# All the data files are available at https://github.com/alexandre-gars/Master-Thesis-ESSEC/tree/main/data.
+# It estimates how drought (dryness) and armed conflict, together, affect household welfare.
 #
 # Two outcomes are studied in every specification:
 #   ln_pcep : log of per-capita expenditure (a continuous welfare measure)
