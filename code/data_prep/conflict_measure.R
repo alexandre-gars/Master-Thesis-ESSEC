@@ -27,7 +27,7 @@
 #   data/processed/conflict_gov_year_pc.csv  (conflict_int, its lags, high_conf)
 # =============================================================================
 
-# dplyr = data manipulation, readr = read/write csv, tidyr = reshaping helpers
+
 suppressPackageStartupMessages({
   library(dplyr); library(readr); library(tidyr)
 })

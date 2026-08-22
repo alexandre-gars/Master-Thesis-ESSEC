@@ -1,7 +1,5 @@
 # =============================================================================
-# appendix_extracts.R
-# -----------------------------------------------------------------------------
-# This script produces two small tables for the appendix of the thesis, straight
+# This script produces two small tables for the appendix of the thesis, 
 # from the household panel:
 #   (A) the CSO Paasche price index (the deflator used to turn nominal spending
 #       into real spending), reported by governorate and year;

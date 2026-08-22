@@ -1,6 +1,4 @@
 # =============================================================================
-# population.R
-# -----------------------------------------------------------------------------
 # Goal of this script: build a yearly population figure for every Iraqi
 # governorate (and every district) from 2004 to 2017. We need population because
 # the conflict measure used in the paper is "deaths per 100,000 inhabitants", so

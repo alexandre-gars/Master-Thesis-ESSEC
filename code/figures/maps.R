@@ -1,6 +1,4 @@
 # =============================================================================
-# maps.R
-# -----------------------------------------------------------------------------
 # Draws map figures of Iraq using real geographic boundaries:
 #   fig13 governorate map of SPEI (drought) by survey year
 #   fig14 governorate map of conflict (deaths per 100,000) by survey year
@@ -84,8 +82,8 @@ panel <- read_csv(file.path(DAT, "final", "panel_household_district.csv"),
   filter(!is.na(governorate), !is.na(year))
 
 # population-normalised conflict (deaths per 100,000), the paper's conflict
-# measure. It is constant within a governorate-year, so we join it on rather than
-# reading the old log-fatalities column that is stored in the panel.
+# measure. It is constant within a governorate-year, so we join it onto the panel 
+# and then collapse to one row per governorate-year.
 conf_pc <- read_csv(file.path(DAT, "processed", "conflict_gov_year_pc.csv"),
                     show_col_types = FALSE) %>%
   transmute(gov_panel = as.integer(governorate), year = as.integer(year),

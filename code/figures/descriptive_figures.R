@@ -1,8 +1,4 @@
-# =============================================================================
-# descriptive_figures.R
-# -----------------------------------------------------------------------------
-# Rebuilds the descriptive (non-map) figures used in final.pdf. 
-#
+# =============================================================================#
 # Figures produced (both pdf and png in outputs/figures/):
 #   fig1_spei_trend          drought (SPEI) over time by region group
 #   fig2_conflict_fatalities conflict deaths over time
@@ -20,7 +16,7 @@ suppressPackageStartupMessages({
 })
 
 figdir <- "outputs/figures"
-# a shared clean theme
+
 th <- theme_minimal(base_size = 13) +
   theme(panel.grid.minor = element_blank(),
         plot.title = element_text(face = "bold", hjust = 0.5, size = 12))
@@ -288,7 +284,7 @@ gov_names <- c("1"="Sulaymaniyah","2"="Kirkuk","3"="Nineveh","4"="Duhok","5"="Er
 
 # conflict is the population-normalised measure (deaths per 100,000), joined from
 # the per-capita conflict file so this figure uses the same conflict variable as
-# the rest of the paper, not the old log-fatalities column stored in the panel.
+# the rest of the paper.
 conf_pc <- read_csv("data/processed/conflict_gov_year_pc.csv",
                     show_col_types = FALSE, progress = FALSE) %>%
   select(governorate, year, conflict_int)
@@ -316,4 +312,4 @@ fig11 <- ggplot(gov_df, aes(spei, conf, size = n, colour = pce)) +
 
 save_fig(fig11, "fig11_gov_scatter", 9.5, 7)
 
-cat("\nAll figures regenerated without embedded titles.\n")
+cat("\nAll figures regenerated\n")

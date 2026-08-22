@@ -1,6 +1,4 @@
 # =============================================================================
-# maps_continuous.R
-# -----------------------------------------------------------------------------
 # Draws two grids of maps, one small map per year from 2004 to 2017, for the 18
 # governorates (GADM level-1 boundaries):
 #   Figure 21: dryness (= -SPEI-4) by governorate and year.
@@ -54,8 +52,7 @@ gadm_to_panel <- tibble::tribble(
 )
 
 # read the governorate polygons and attach our numeric code. The stopifnot()
-# check stops the script if any polygon failed to match (a safety guard against a
-# misspelled name in the crosswalk above).
+# check stops the script if any polygon failed to match.
 gov_sf <- st_read(file.path(SHP, "gadm41_IRQ_1.shp"), quiet = TRUE) %>%
   left_join(gadm_to_panel, by = "NAME_1")
 stopifnot(!any(is.na(gov_sf$gov_panel)))
@@ -89,7 +86,7 @@ map_theme <- theme_minimal(base_size = 9) +
 # -----------------------------------------------------------------------------
 # Figure 21: dryness maps, one panel per year (facet_wrap by year).
 # The join is many-to-many because each governorate polygon is repeated once per
-# year. A diverging blue-white-red scale centres at 0 (white = normal year).
+# year. A blue-white-red scale centres at 0 (white = normal year).
 # -----------------------------------------------------------------------------
 dry_sf <- gov_sf %>% left_join(clim, by = "gov_panel",
                                relationship = "many-to-many")

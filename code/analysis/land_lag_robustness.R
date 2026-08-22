@@ -1,6 +1,4 @@
 # =============================================================================
-# land_lag_robustness.R
-# -----------------------------------------------------------------------------
 # This is a robustness check for the "cultivated area" regression in the paper's
 # land table (tab:land). The question it answers: when we add one-year lags of
 # the two shocks (last year's dryness and last year's conflict) to the model,

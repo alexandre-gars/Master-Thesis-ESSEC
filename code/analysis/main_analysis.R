@@ -1,18 +1,16 @@
 # =============================================================================
-# main_analysis.R
-# -----------------------------------------------------------------------------
 # This is the main regression script of the paper. It estimates how drought
 # (dryness) and armed conflict, together, affect household welfare.
 #
 # Two outcomes are studied in every specification:
 #   ln_pcep : log of per-capita expenditure (a continuous welfare measure)
-#   poor    : a 0/1 indicator of whether the household is poor
+#   poor : a 0/1 indicator of whether the household is poor
 #
 # The key idea is the interaction term "dryness * conflict": it tests whether
 # drought hurts more when conflict is also high. We report the interaction in
-# two flavours:
+# two ways, which are complementary:
 #   (a) intensity : dryness * conflict_int   (conflict = deaths per 100,000)
-#   (b) binary    : dryness * high_conf       (conflict = top-quartile flag)
+#   (b) binary : dryness * high_conf       (conflict = top-quartile flag)
 #
 # The whole analysis is run twice, at two geographic levels, by the run_level()
 # function: once with governorate fixed effects and clustering, and once with
@@ -45,8 +43,8 @@ cpc  <- read_csv("data/processed/conflict_gov_year_pc.csv", show_col_types = FAL
 prep_panel <- function(path) {
   panel <- read_csv(path, show_col_types = FALSE, progress = FALSE)
 
-  # "dryness" is just the negative of SPEI, so that a higher number means drier
-  # (SPEI is negative when dry). We build the contemporaneous value plus lags.
+  # "dryness" is the negative of SPEI, so that a higher number means drier
+  # (SPEI is negative when dry). We build the contemporaneous value + lags.
   # The 3-year lag is not stored in the panel, so we build it here by taking the
   # climate table, shifting its year forward by 3, and joining it back on.
   lag3_clim <- clim %>% select(governorate, year, spei3_annual_mean) %>%
@@ -132,7 +130,7 @@ run_pair <- function(data, label, rhs, fe_var, cl_var) {
 # interaction, because it depends on the level of conflict m. The total slope is
 # b[dryness] + m * b[interaction]. This function computes that combined slope and
 # its correct standard error (using the variance-covariance matrix vcov), then a
-# z-stat and p-value. This is a "linear combination" (lincom) of coefficients.
+# z-stat and p-value. This is a linear combination (lincom) of coefficients.
 # -----------------------------------------------------------------------------
 lincom_dry <- function(fit, m, outcome, spec, dvar="dryness", ixvar="dry_x_int") {
   b <- coef(fit); V <- vcov(fit)
@@ -268,6 +266,7 @@ run_level <- function(level) {
   # land variables are only observed in the 2012 wave (wave==2), so this block is
   # a single cross-section with no fixed effects. "centered" variables subtract
   # the mean so the main effects can be read at the other variable's average.
+
   land_ctrl <- paste(c("age_head","male_head","edu_head","dep_ratio",
                        "ln_hhsize","n_young_male"), collapse=" + ")
   ls0 <- panel %>% filter(wave==2, !is.na(dryness), !is.na(conflict_int))
@@ -276,8 +275,10 @@ run_level <- function(level) {
   ls0 <- ls0 %>% mutate(dry_c = dryness - dbar, conf_c = conflict_int - cbar2,
                         dxc_c = dry_c*conf_c)
   la <- ls0 %>% filter(agri_area_donum>0 & !is.na(agri_area_donum))  # only farms with land
+
   # run_land() estimates one land outcome; "centered" chooses centred variables,
   # "extra" allows an extra control, "d" is the data (farms only vs all rural)
+
   run_land <- function(y, lab, d, extra="", centered=FALSE){
     vars <- if(centered) "dry_c + conf_c + dxc_c" else "dryness + conflict_int + dry_x_int"
     rhs <- paste(vars, "+", land_ctrl); if(nchar(extra)>0) rhs<-paste(rhs,"+",extra)

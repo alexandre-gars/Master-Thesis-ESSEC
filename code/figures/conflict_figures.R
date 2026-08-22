@@ -1,6 +1,4 @@
 # =============================================================================
-# conflict_figures.R
-# -----------------------------------------------------------------------------
 # Builds two figures about conflict for the paper. The plots carry no title
 # inside the image, because the title is supplied by the LaTeX caption.
 #   Figure 19: how conflict deaths are distributed across governorate-years.
@@ -13,7 +11,6 @@
 #   fig19_fatalities_dist, fig20_dryness_conflict_ts
 # =============================================================================
 
-# dplyr/readr/tidyr for data, ggplot2 for plotting, cowplot to combine panels
 suppressPackageStartupMessages({
   library(dplyr); library(readr); library(tidyr); library(ggplot2); library(cowplot)
 })
@@ -25,7 +22,7 @@ dir.create(fig_dir, recursive = TRUE, showWarnings = FALSE)
 cpc  <- read_csv("data/processed/conflict_gov_year_pc.csv", show_col_types = FALSE, progress = FALSE)
 clim <- read_csv("data/processed/climate_extended.csv", show_col_types = FALSE, progress = FALSE)
 
-# a shared minimal look for both figures (clean background, legend at bottom)
+# a shared minimal look for both figures (legend at bottom)
 base_theme <- theme_minimal(base_size = 12) +
   theme(panel.grid.minor = element_blank(),
         legend.position = "bottom",
